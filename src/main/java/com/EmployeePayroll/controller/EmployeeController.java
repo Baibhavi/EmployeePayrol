@@ -15,11 +15,15 @@ public class EmployeeController {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    //curl localhost:8080/employeepayrollservice/ -w "\n"
+    //http:localhost:8080/employee/findall
     @GetMapping("/")
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
+    //curl localhost:8080/employeepayrollservice/get/1 -w "\n"
+    //http:localhost:8080/employee/findallgetbyid/1
     @GetMapping("/get/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
         return employeeRepository.findById(id)
@@ -27,12 +31,17 @@ public class EmployeeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    //curl -X POST -H "Content-Type: application/json" -d '{"name": "Lisa","salary":
+    //2000}' "http://localhost:8080/employeepayrollservice/create" -w "\n"
+    //http:localhost:8080/employee/create/post
     @PostMapping("/create")
     public Employee createEmployee(@RequestBody Employee employee) {
         return employeeRepository.save(employee);
     }
 
-
+    //curl -X PUT -H "Content-Type: application/json" -d '{"name": "Lisa","salary": 2000}'
+    //"http://localhost:8080/employeepayrollservice/update" -w "\n"
+    //http:localhost:8080/employee/update/1
     @PutMapping("update/{id}")
     public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
         Optional<Employee> optionalEmployee = employeeRepository.findById(id);
@@ -46,6 +55,9 @@ public class EmployeeController {
         return ResponseEntity.notFound().build();
     }
 
+    //http:localhost:8080/employee/delete/1
+    // curl -X DELETE -H "Content-Type: application/json"
+    //localhost:8080/employeepayrollservice/delete/1 -w "\n"
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         if (employeeRepository.existsById(id)) {
