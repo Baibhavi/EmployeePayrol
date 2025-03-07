@@ -1,20 +1,23 @@
 package com.EmployeePayroll.model;
 
+import com.EmployeePayroll.dto.EmployeeDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Data
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
+@Data
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String email;
+    private long salary;
+    public Employee() {}
+    public Employee(EmployeeDTO employeeDTO) {
+        this.name = employeeDTO.name;
+        this.salary = employeeDTO.salary;
+    }
 }

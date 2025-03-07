@@ -1,8 +1,11 @@
 package com.EmployeePayroll.controller;
 
+import com.EmployeePayroll.dto.EmployeeDTO;
+import com.EmployeePayroll.dto.ResponseDTO;
 import com.EmployeePayroll.model.Employee;
 import com.EmployeePayroll.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,60 +13,63 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/employeepayrollservice")
 public class EmployeeController {
+
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    //curl localhost:8080/employeepayrollservice/ -w "\n"
-    //http:localhost:8080/employee/findall
-    @GetMapping("/")
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    @RequestMapping(value = {"", "/", "/get"})
+    public ResponseEntity<ResponseDTO> getEmployeeData() {
+        // Fetch all employees from the repository
+        List<Employee> empData = employeeRepository.findAll();
+        ResponseDTO respDTO = new ResponseDTO("Get Call Successful", empData);
+        return new ResponseEntity<>(respDTO, HttpStatus.OK);
     }
 
-    //curl localhost:8080/employeepayrollservice/get/1 -w "\n"
-    //http:localhost:8080/employee/findallgetbyid/1
     @GetMapping("/get/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
-        return employeeRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    //curl -X POST -H "Content-Type: application/json" -d '{"name": "Lisa","salary":
-    //2000}' "http://localhost:8080/employeepayrollservice/create" -w "\n"
-    //http:localhost:8080/employee/create/post
-    @PostMapping("/create")
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeRepository.save(employee);
-    }
-
-    //curl -X PUT -H "Content-Type: application/json" -d '{"name": "Lisa","salary": 2000}'
-    //"http://localhost:8080/employeepayrollservice/update" -w "\n"
-    //http:localhost:8080/employee/update/1
-    @PutMapping("update/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
-        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
-
-        if (optionalEmployee.isPresent()) {
-            Employee employee = optionalEmployee.get();
-            employee.setName(employeeDetails.getName());
-            employee.setEmail(employeeDetails.getEmail());
-            return ResponseEntity.ok(employeeRepository.save(employee));
+    public ResponseEntity<ResponseDTO> getEmployeeData(@PathVariable Long id) {
+        Optional<Employee> empData = employeeRepository.findById(id);
+        if (empData.isPresent()) {
+            ResponseDTO respDTO = new ResponseDTO("Get Call Successful", empData.get());
+            return new ResponseEntity<>(respDTO, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ResponseDTO("Employee Not Found", null), HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.notFound().build();
     }
 
-    //http:localhost:8080/employee/delete/1
-    // curl -X DELETE -H "Content-Type: application/json"
-    //localhost:8080/employeepayrollservice/delete/1 -w "\n"
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+    @PostMapping("/create")
+    public ResponseEntity<ResponseDTO> addEmployee(@RequestBody EmployeeDTO empDTO) {
+        Employee empData = new Employee(empDTO);
+        // Save the new employee to the database (this will auto-generate the ID)
+        employeeRepository.save(empData);
+        ResponseDTO respDTO = new ResponseDTO("Create Employee Payroll Data Successfully", empData);
+        return new ResponseEntity<>(respDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ResponseDTO> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDTO empDTO) {
+        Optional<Employee> empData = employeeRepository.findById(id);
+        if (empData.isPresent()) {
+            Employee employee = empData.get();
+            employee.setName(empDTO.getName());
+            employee.setSalary(empDTO.getSalary());
+            // Update the employee record in the database
+            employeeRepository.save(employee);
+            ResponseDTO respDTO = new ResponseDTO("Updated Employee Payroll Data Successfully", employee);
+            return new ResponseEntity<>(respDTO, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ResponseDTO("Employee Not Found", null), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseDTO> deleteEmployee(@PathVariable Long id) {
         if (employeeRepository.existsById(id)) {
             employeeRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+            ResponseDTO respDTO = new ResponseDTO("Deleted Successfully", "Delete id: " + id);
+            return new ResponseEntity<>(respDTO, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ResponseDTO("Employee Not Found", null), HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.notFound().build();
     }
 }

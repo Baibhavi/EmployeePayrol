@@ -26,7 +26,7 @@ public class EmployeeService {
     public Optional<Employee> updateEmployee(Employee employeeDetails, Long id){
         return employeeRepository.findById(id).map(employee -> {
             employee.setName(employeeDetails.getName());
-            employee.setEmail(employeeDetails.getEmail());
+            employee.setSalary(employeeDetails.getSalary());
             return employeeRepository.save(employee);
         });
     }
